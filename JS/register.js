@@ -24,20 +24,20 @@ form.addEventListener('submit', async function(event) {
     // Validation
     if (!nameInput || !emailInput || !passwordInput || !confirmPasswordInput) {
         errorDiv.textContent = 'All fields are required.';
-        errorDiv.style.color = 'red';
+        errorDiv.style.color = 'darkred';
         return;
     }
 
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     if (!passwordRegex.test(passwordInput)) {
         errorDiv.textContent = 'Password must be at least 8 characters long and contain letters and numbers.';
-        errorDiv.style.color = 'red';
+        errorDiv.style.color = 'darkred';
         return;
     }
 
     if (passwordInput !== confirmPasswordInput) {
         errorDiv.textContent = 'Passwords do not match.';
-        errorDiv.style.color = 'red';
+        errorDiv.style.color = 'darkred';
         return;
     }
 
@@ -70,6 +70,6 @@ form.addEventListener('submit', async function(event) {
 
     } catch (error) {
         errorDiv.textContent = error.message;
-        errorDiv.style.color = 'red';
+        errorDiv.style.color = 'darkred';
     }
 });
