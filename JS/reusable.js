@@ -129,6 +129,7 @@ document.addEventListener("click", (e) => {
         menuVisible = false;
     }
 });
+
 // Initial render
 renderToggleMenu();
 renderProfileImg();

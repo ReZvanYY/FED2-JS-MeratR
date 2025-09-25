@@ -1,13 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Document</title>
-    
-</head>
-<body>
-    
-</body>
+    <link rel="stylesheet" href="CSS/main.css" />
+    <link rel="stylesheet" href="CSS/output.css" />
+
+    <title>Rizz Zone: Home</title>
+  </head>
+  <body class="font-montserrat font-semibold bg-[#FFF8E7]">
+    <header class="p-4 flex justify-center items-center bg-[#489793]">
+      <nav class="flex items-center justify-between w-full">
+        <button>
+          <img
+            src="https://i.imghippo.com/files/LKqc2461NZo.png"
+            id="toggle-menu"
+            alt="three horizontal black bars with rounded ends forming a hamburger menu icon, displayed on a plain black background, neutral tone"
+            class="w-14" />
+        </button>
+      </nav>
+    </header>
+    <div class="" id="toggle-menu-display-area"></div>
+    <main>
+        <!-- Search and create a new post button -->
+      <div class="flex justify-center mt-2">
+        <div class="">
+          <input
+            type="search"
+            class="rounded-full text-center border-2 p-2 bg-[#489793] focus:bg-white focus:outline-none transition-colors duration-200 appearance-none"
+            placeholder="Search"
+            id="search"
+            name="search" />
+        </div>
+        <button class="w-15 rounded-full" id="create-a-new-post">
+          <img
+            src="https://i.imghippo.com/files/GCjf7875el.png"
+            alt=""
+            class="" />
+        </button>
+      </div>
+      <!-- create a new post form and submit button -->
+      <div id="post-form-container" class="border-2 h-auto flex flex-col items-center m-auto mt-12 mb-12 justify-center ">
+          <form id="post-form" class="flex flex-col">
+              <textarea name="post-content" id="post-content" rows="6" class="md:w-150 w-60 p-4 rounded-4xl mb-1 mt-4 resize-none bg-gray-200 ml-4" placeholder="Tell us your ultimate rizz">
+            </textarea>
+            <button type="submit" class="bg-[#B56F76] border-2 border-black text-black font-montserrat font-bold rounded-md p-2 mt-4 mb-4 w-[30%] m-auto hover:bg-[#b56472] cursor-pointer" id="submit-post">POST</button>
+        </form>
+      </div>
+      <!-- display area for all new and old posts -->
+      <div id="displayed-post"></div>
+
+    </main>
+
+    <!-- footer -->
+    <footer
+      class="border-t-2 border-[#489793] mt-8 p-4 flex items-center bg-[#489793] text-left justify-start">
+      <div class="flex flex-col">
+        <a href="index.html" class="text-black font-montserrat font-semibold"
+          >Home</a
+        >
+        <a
+          href="HTML/user-page.html"
+          class="text-black font-montserrat font-semibold"
+          >My Profile</a
+        >
+        <a
+          href="HTML/privacy-policy.html"
+          class="text-black font-montserrat font-semibold"
+          >Privacy Policy</a
+        >
+        <a
+          href="HTML/terms-of-service.html"
+          class="text-black font-montserrat font-semibold"
+          >Terms of Service</a
+        >
+        <a href="HTML/contact" class="text-black font-montserrat font-semibold"
+          >Contact Us</a
+        >
+        <p class="text-black font-montserrat font-semibold">
+          &copy; 2025 Rizz Zone. All rights reserved.
+        </p>
+      </div>
+    </footer>
+    <script src="JS/reusable.js"></script>
+    <script src="JS/home-page.js"></script>
+  </body>
 </html>
