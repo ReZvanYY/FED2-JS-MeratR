@@ -1,5 +1,5 @@
 //Get token from localStorage.
-const token = localStorage.getItem("accessToken");
+// const token = localStorage.getItem("accessToken");
 if (!token) {
   throw new Error("unable to find the token, user not signed in.");
 }
@@ -18,7 +18,7 @@ function isSignedIn() {
 
 // checking if the user is signed in or not
 if (!isSignedIn()) {
-  window.location.href = "sign-in-page.html";
+  window.location.href = "/HTML/sign-in-page.html";
 }
 
 //API key dynamic Generation
@@ -70,15 +70,16 @@ async function fetchPosts() {
 
     userPosts = result.data || [];
     renderPosts();
-} catch (error){
+  } catch (error) {
     displayArea.innerHTML = `<p class="text-red-700">Failed to load posts, please refresh the page (CTRL + R or CMD + R)</p>`;
     console.error(error);
-}
+  }
 }
 
 // Connect to the html elements
+const postTitleInput = document.getElementById("title");
 const searchInput = document.getElementById("search");
-const displayArea = document.getElementById("displayed-area");
+const displayArea = document.getElementById("displayed-post");
 const newPostButton = document.getElementById("create-a-new-post");
 const postFormContainer = document.getElementById("post-form-container");
 const postForm = document.getElementById("post-form");
@@ -90,34 +91,39 @@ function generateUniqueId() {
 }
 
 // function for displaying the posts.
-function renderPosts() {
+function renderPosts(postsToRender = userPosts) {
   displayArea.innerHTML = ""; //clear out all previous elements.
 
-  if (posts.length === 0) {
+  if (postsToRender.length === 0) {
     displayArea.textContent = `<p class="text-gray-500 mt-4" id="no-post-message">
             No posts yet! Be the first one to post!
-    </p>`;
+        </p>`;
     return;
   }
   // Dynamically adding the elements needed for the posts as they get posted.
-  posts.forEach((post) => {
+  postsToRender.forEach((post) => {
     const articleElementForPost = document.createElement("article");
-    articleElementForPost.className = "p-4 mb-4 rounded-lg bg-white shadow";
+    articleElementForPost.className = "p-4 mb-4 mt-4 rounded-lg bg-white shadow";
+    
 
     const userInfoElement = document.createElement("div");
     userInfoElement.className = "flex items-center gap-2 mb-2";
 
     const userProfileImage = document.createElement("img");
     userProfileImage.src = post.author?.avatar?.url || currentUser.profileImage;
-    userProfileImage.alt = `${post.user?.name} profile picture`;
+    userProfileImage.alt = `${post.author?.name} profile picture`;
     userProfileImage.className = "w-10 h-10 rounded-full";
 
     const userName = document.createElement("p");
-    userName.textContent = post.user?.name;
-    userName.className = "font-bold text-[2rem]";
+    userName.textContent = post.author?.name;
+    userName.className = "font-bold text-[1.2rem]";
 
     userInfoElement.appendChild(userProfileImage);
     userInfoElement.appendChild(userName);
+
+    const postTitle = document.createElement('h3');
+    postTitle.textContent = post.title || "Quick Post";
+    postTitle.className = "font-bold text-xl mb-4";
 
     const postContent = document.createElement("p");
     postContent.textContent = post.body;
@@ -127,6 +133,7 @@ function renderPosts() {
     link.href = `post.html?id=${post.id}`;
 
     articleElementForPost.appendChild(userInfoElement);
+    articleElementForPost.appendChild(postTitle);
     articleElementForPost.appendChild(postContent);
     articleElementForPost.appendChild(link);
 
@@ -142,27 +149,47 @@ newPostButton.addEventListener("click", () => {
 postForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const content = postContentInput.value.trim();
+  const title = postTitleInput.value.trim();
+
   if (!token) return alert("You must be signed in to post");
+  if (!content) return alert("Please enter some content");
+  if (!title) return alert("Please a fitting title");
 
   const newPost = {
+    title: title,
     body: content,
   };
   try {
+    const apiKey = await getApiKey();
     const response = await fetch(postsApiUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "X-Noroff-API-Key": apiKey,
+      },
       body: JSON.stringify(newPost),
     });
     if (!response.ok) throw new Error("Failed to post");
 
     postContentInput.value = "";
+    postTitleInput.value = "";
     postFormContainer.classList.add("hidden");
-
     //Reload the posts after a new post.
     fetchPosts();
   } catch (err) {
-    alert("Error Posting: " + err.messsage);
+    alert("Error Posting: " + err.message);
     console.error(err);
   }
+});
+// search functionality.
+searchInput.addEventListener("input", (e) => {
+  const searchQuery = e.target.value.toLowerCase();
+  const filteredPosts = userPosts.filter(
+    (post) =>
+      post.body.toLowerCase().includes(searchQuery) ||
+      post.author?.name.toLowerCase().includes(searchQuery)
+  );
+  renderPosts(filteredPosts);
 });
 fetchPosts();

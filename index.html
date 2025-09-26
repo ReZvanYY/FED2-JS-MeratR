@@ -48,7 +48,11 @@
       <!-- create a new post form and submit button -->
       <div id="post-form-container" class="border-2 h-auto flex flex-col items-center m-auto mt-12 mb-12 justify-center ">
           <form id="post-form" class="flex flex-col">
-              <textarea name="post-content" id="post-content" rows="6" class="md:w-150 w-60 p-4 rounded-4xl mb-1 mt-4 resize-none bg-gray-200 ml-4" placeholder="Tell us your ultimate rizz">
+            <div class="flex flex-col m-auto text-center">
+              <label for="title">Post Title</label>
+                <input type="text" class="p-4 rounded-4xl mb-1 mt-4 resize-none bg-gray-200" id="title" required>
+            </div>
+              <textarea name="post-content" id="post-content" rows="6" class="md:w-150 w-60 p-4 rounded-4xl mb-1 mt-4 resize-none bg-gray-200" placeholder="Tell us your ultimate rizz">
             </textarea>
             <button type="submit" class="bg-[#B56F76] border-2 border-black text-black font-montserrat font-bold rounded-md p-2 mt-4 mb-4 w-[30%] m-auto hover:bg-[#b56472] cursor-pointer" id="submit-post">POST</button>
         </form>

@@ -2,8 +2,9 @@
 const loginForm = document.getElementById('login-form');
 // Divs for displaying messages
 const logInErrorDiv = document.createElement('div');
-loginForm.appendChild(logInErrorDiv);
 const logInSuccessDiv = document.createElement('div');
+
+loginForm.appendChild(logInErrorDiv);
 loginForm.appendChild(logInSuccessDiv);
 
 // Event listener for form submission
@@ -24,35 +25,44 @@ loginForm.addEventListener('submit', async function (event){
         logInErrorDiv.style.color = 'darkred';
         return;
     }
-    // Prepare login data
-    const loginData = {
-        email: emailInput,
-        password: passwordInput
-    };
+ 
     // Send login request
     try {
         const loginResponse = await fetch("https://v2.api.noroff.dev/auth/login",{
             method: "POST",
-            headers: { "Content-Type" : "application/json" },
-            body: JSON.stringify(loginData)
+            headers: { "Content-Type" : "application/json" 
+            },
+            body: JSON.stringify({email: emailInput, password: passwordInput })
         });
-        // Parse response
+        // Parse json and respons
+        const loginResult = await loginResponse.json();
+
         if (!loginResponse.ok){
-            const loginResult = await loginResponse.json();
             logInErrorDiv.textContent = loginResult.message || 'Login failed';
             logInErrorDiv.style.color = 'darkred';
             return;
         }
-        // encrypt user data for storage
-        const emailStart = loginResult.email.split('@')[0];
-        const includeName = loginResult.name;
-        const combineBoth = `${emailStart}:(${includeName})`;
-        const encryptionData = btoa(combineBoth);
+        const { accessToken, ...userData } = loginResult.data;
 
-        // Store token and user info in localStorage
-        localStorage.setItem('accessToken', encryptionData);
-        localStorage.setItem('user', JSON.stringify(loginResult));
-        
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        const apiKeyResponse = await fetch("https://v2.api.noroff.dev/auth/create-api-key", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name: "AuthKey" })
+        });
+
+        const apiKeyResult = await apiKeyResponse.json();
+        if(!apiKeyResponse.ok){
+            throw new Error(apiKeyResult.message || "Failed to generate API key");
+        }
+
+        localStorage.setItem("apiKey", apiKeyResult.data.key);
+
         // Successful login
         logInSuccessDiv.textContent = 'Login successful! Redirecting...';
         logInSuccessDiv.style.color = 'green';

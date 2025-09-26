@@ -1,18 +1,18 @@
+const token = localStorage.getItem("accessToken");
+
 // Check if user is signed in
 function isSignedIn() {
-  const token = localStorage.getItem("accessToken");
   return !!token; // returns true if token exists, false otherwise
 }
 // Redirect to sign-in page
 function signOut() {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("user");
-  window.location.href = "sign-in-page.html";
+  window.location.href = "/HTML/sign-in-page.html";
 }
 
 const nav = document.querySelector("nav");
 const headerMenu = document.getElementById("toggle-menu-display-area");
-const toggleMenuButtonPrimary = document.querySelector("nav button");
 const toggleMenuButtonImage = document.getElementById("toggle-menu");
 
 //generic photo used by default
@@ -31,11 +31,11 @@ currentImg.className = "w-14 rounded-full justify-start";
 currentImg.alt = "current users profile picture or img."
 if (isSignedIn()){
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    currentImg.src = user.profileImage || genericProfileImg;
-    profileLink.href = "user-page.html";
+    currentImg.src = currentUser.profileImage || genericProfileImg;
+    profileLink.href = "/HTML/user-page.html";
 } else {
     currentImg.src = genericProfileImg;
-    profileLink.href = "sign-in-page.html";
+    profileLink.href = "/HTML/sign-in-page.html";
 }
 profileLink.appendChild(currentImg)
 nav.insertBefore(profileLink, nav.firstChild);
@@ -71,7 +71,7 @@ function renderToggleMenu() {
     const profileButton = document.createElement("button");
     profileButton.textContent = "PROFILE";
     profileButton.onclick = () => {
-      window.location.href = "user-page.html";
+      window.location.href = "/HTML/user-page.html";
     };
     menu.appendChild(profileButton);
 
@@ -90,14 +90,14 @@ function renderToggleMenu() {
     const signInButton = document.createElement("button");
     signInButton.textContent = "SIGN IN";
     signInButton.onclick = () => {
-      window.location.href = "sign-in-page.html";
+      window.location.href = "/HTML/sign-in-page.html";
     };
     menu.appendChild(signInButton);
 
     const registerButton = document.createElement("button");
     registerButton.textContent = "SIGN UP";
     registerButton.onclick = () => {
-      window.location.href = "sign-up-page.html";
+      window.location.href = "/HTML/sign-up-page.html";
     };
     menu.appendChild(registerButton);
   }
