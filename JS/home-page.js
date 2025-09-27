@@ -85,11 +85,97 @@ const postForm = document.getElementById("post-form");
 const postContentInput = document.getElementById("post-content");
 
 const postFormContainer = document.getElementById("post-form-container");
-postFormContainer.classList.add("hidden")
+postFormContainer.classList.add("hidden");
 
 // Generation of a unique ID for each post, by taking the timestamp + a random number
 function generateUniqueId() {
   return Date.now() + Math.floor(Math.random() * 100000);
+}
+async function handleEdit(post, postContent, container) {
+  const textArea = document.createElement("textarea");
+  textArea.value = post.body;
+  textArea.className = "w-full border p-2 mb-2 mt-2";
+
+  container.replaceChild(textArea, postContent);
+
+  const addSaveButton = document.createElement("button");
+  addSaveButton.textContent = "SAVE";
+  addSaveButton.className =
+    "bg-[#B56F76] border-2 border-black text-black font-montserrat font-bold rounded-md p-2 mt-4 hover:bg-[#b56472] cursor-pointer";
+
+  const cancelButton = document.createElement("button");
+  cancelButton.textContent = "CANCEL";
+  cancelButton.className =
+    "bg-red-500 border-2 border-black text-black font-montserrat font-bold rounded-md p-2 mt-4 hover:bg-red-300 cursor-pointer";
+
+  const actionButtonContainer = document.createElement("div");
+  actionButtonContainer.className = "flex gap-2 mt-4 mb-4";
+
+  actionButtonContainer.appendChild(addSaveButton);
+  actionButtonContainer.appendChild(cancelButton);
+  container.appendChild(actionButtonContainer);
+
+  addSaveButton.addEventListener("click", async () => {
+    const updateBodyContent = textArea.value.trim();
+    if (!updateBodyContent) return alert("Content cannot be empty");
+
+    try {
+      const apiKey = await getApiKey();
+      const response = await fetch(
+        `https://v2.api.noroff.dev/social/posts/${post.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "X-Noroff-API-Key": apiKey,
+          },
+          body: JSON.stringify({
+            title: post.title,
+            body: updateBodyContent,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update post");
+      fetchPosts();
+
+    } catch (error) {
+      alert("Error updating post: " + error.message);
+      console.error(error);
+    }
+  });
+
+  cancelButton.addEventListener("click", () => {
+    container.replaceChild(postContent, textArea);
+    actionButtonContainer.remove();
+  });
+}
+
+async function deletePost(postId) {
+  if (
+    !confirm(
+      "Do you wish to delete this post? This post will be permantly deleted."
+    )
+  )
+    return;
+
+  try {
+    const apiKey = await getApiKey();
+    const response = await fetch(`https://v2.api.noroff.dev/social/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-Noroff-API-Key": apiKey,
+        },
+      });
+
+    if (!response.ok) throw new Error("Failed to delete the post!");
+    fetchPosts();
+  } catch (error) {
+    alert("Error deleting post: " + error.message);
+    console.error(error);
+  }
 }
 
 // function for displaying the posts.
@@ -98,22 +184,24 @@ function renderPosts(postsToRender = userPosts) {
 
   if (postsToRender.length === 0) {
     displayArea.textContent = "No Post Found";
-    displayArea.className = "text-center text-[2rem]"
-    displayArea.style.color = "red"
-  }else {
-        displayArea.className = "text-[1.25rem]"
-    displayArea.style.color = "black"
+    displayArea.className = "text-center text-[2rem]";
+    displayArea.style.color = "red";
+  } else {
+    displayArea.className = "text-[1.25rem]";
+    displayArea.style.color = "black";
   }
   // Dynamically adding the elements needed for the posts as they get posted.
   postsToRender.forEach((post) => {
     const articleElementForPost = document.createElement("article");
-    articleElementForPost.className = "p-4 mb-4 mt-4 rounded-lg bg-white shadow";
-    
+    articleElementForPost.className =
+      "p-4 mb-4 mt-4 rounded-lg bg-white shadow";
+
     const userInfoElement = document.createElement("div");
     userInfoElement.className = "flex items-center gap-2 mb-2";
 
     const userProfileImage = document.createElement("img");
-    userProfileImage.src = post.author?.avatar?.url || "https://i.imghippo.com/files/ZyN1996XVE.png";
+    userProfileImage.src =
+      post.author?.avatar?.url || "https://i.imghippo.com/files/ZyN1996XVE.png";
     userProfileImage.alt = `${post.author?.name} profile picture`;
     userProfileImage.className = "w-10 h-10 rounded-full";
 
@@ -124,7 +212,7 @@ function renderPosts(postsToRender = userPosts) {
     userInfoElement.appendChild(userProfileImage);
     userInfoElement.appendChild(userName);
 
-    const postTitle = document.createElement('h3');
+    const postTitle = document.createElement("h3");
     postTitle.textContent = post.title || "Quick Post";
     postTitle.className = "font-bold text-xl mb-4";
 
@@ -137,6 +225,30 @@ function renderPosts(postsToRender = userPosts) {
     link.textContent = "See Post";
     link.className = "text-blue-600 hover:underline";
 
+    if (post.author?.name === currentUser.name) {
+      const interactiveButtonContainer = document.createElement("div");
+      interactiveButtonContainer.className = "flex gap-2 mt-4 mb-4";
+
+      const editButton = document.createElement("button");
+      editButton.textContent = "EDIT POST";
+      editButton.id = "edit-button";
+      editButton.className = "px-2 py-1 bg-yellow-500 text-white rounded-xl";
+      editButton.addEventListener("click", () =>
+        handleEdit(post, postContent, articleElementForPost)
+      );
+
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "DELETE POST";
+      deleteButton.id = "delete-button";
+      deleteButton.className = "px-2 py-1 bg-red-500 text-white rounded-xl";
+      deleteButton.addEventListener("click", () => deletePost(post.id));
+
+      interactiveButtonContainer.appendChild(editButton);
+      interactiveButtonContainer.appendChild(deleteButton);
+
+      articleElementForPost.appendChild(interactiveButtonContainer);
+    }
+
     articleElementForPost.appendChild(userInfoElement);
     articleElementForPost.appendChild(postTitle);
     articleElementForPost.appendChild(postContent);
@@ -147,10 +259,10 @@ function renderPosts(postsToRender = userPosts) {
 }
 // Toggle the post form
 newPostButton.addEventListener("click", () => {
-  if(postFormContainer.classList.contains("hidden")){
-    postFormContainer.classList.remove("hidden")
+  if (postFormContainer.classList.contains("hidden")) {
+    postFormContainer.classList.remove("hidden");
   } else {
-    postFormContainer.classList.add("hidden")
+    postFormContainer.classList.add("hidden");
   }
 });
 
