@@ -8,7 +8,7 @@ if (!token) {
 const currentUser = JSON.parse(localStorage.getItem("user"));
 
 //API URL
-const postsApiUrl = "https://v2.api.noroff.dev/social/posts";
+const postsApiUrl = "https://v2.api.noroff.dev/social/posts?_author=true";
 const apiKeyStorage = "apiKey";
 
 // the function that checks if the user is signed in or not
@@ -81,9 +81,11 @@ const postTitleInput = document.getElementById("title");
 const searchInput = document.getElementById("search");
 const displayArea = document.getElementById("displayed-post");
 const newPostButton = document.getElementById("create-a-new-post");
-const postFormContainer = document.getElementById("post-form-container");
 const postForm = document.getElementById("post-form");
 const postContentInput = document.getElementById("post-content");
+
+const postFormContainer = document.getElementById("post-form-container");
+postFormContainer.classList.add("hidden")
 
 // Generation of a unique ID for each post, by taking the timestamp + a random number
 function generateUniqueId() {
@@ -95,22 +97,23 @@ function renderPosts(postsToRender = userPosts) {
   displayArea.innerHTML = ""; //clear out all previous elements.
 
   if (postsToRender.length === 0) {
-    displayArea.textContent = `<p class="text-gray-500 mt-4" id="no-post-message">
-            No posts yet! Be the first one to post!
-        </p>`;
-    return;
+    displayArea.textContent = "No Post Found";
+    displayArea.className = "text-center text-[2rem]"
+    displayArea.style.color = "red"
+  }else {
+        displayArea.className = "text-[1.25rem]"
+    displayArea.style.color = "black"
   }
   // Dynamically adding the elements needed for the posts as they get posted.
   postsToRender.forEach((post) => {
     const articleElementForPost = document.createElement("article");
     articleElementForPost.className = "p-4 mb-4 mt-4 rounded-lg bg-white shadow";
     
-
     const userInfoElement = document.createElement("div");
     userInfoElement.className = "flex items-center gap-2 mb-2";
 
     const userProfileImage = document.createElement("img");
-    userProfileImage.src = post.author?.avatar?.url || currentUser.profileImage;
+    userProfileImage.src = post.author?.avatar?.url || "https://i.imghippo.com/files/ZyN1996XVE.png";
     userProfileImage.alt = `${post.author?.name} profile picture`;
     userProfileImage.className = "w-10 h-10 rounded-full";
 
@@ -130,7 +133,9 @@ function renderPosts(postsToRender = userPosts) {
     postContent.className = "mb-2";
 
     const link = document.createElement("a");
-    link.href = `post.html?id=${post.id}`;
+    link.href = `/HTML/post-specific-page.html?id=${post.id}`;
+    link.textContent = "See Post";
+    link.className = "text-blue-600 hover:underline";
 
     articleElementForPost.appendChild(userInfoElement);
     articleElementForPost.appendChild(postTitle);
@@ -142,7 +147,11 @@ function renderPosts(postsToRender = userPosts) {
 }
 // Toggle the post form
 newPostButton.addEventListener("click", () => {
-  postFormContainer.classList.toggle("hidden");
+  if(postFormContainer.classList.contains("hidden")){
+    postFormContainer.classList.remove("hidden")
+  } else {
+    postFormContainer.classList.add("hidden")
+  }
 });
 
 // Submit a new post
@@ -174,7 +183,6 @@ postForm.addEventListener("submit", async (e) => {
 
     postContentInput.value = "";
     postTitleInput.value = "";
-    postFormContainer.classList.add("hidden");
     //Reload the posts after a new post.
     fetchPosts();
   } catch (err) {
