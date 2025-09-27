@@ -1,3 +1,4 @@
+
 if(!token){
     window.location.href = "/HTML/sign-in-page.html";
 }
@@ -47,15 +48,17 @@ async function fetchProfile(){
 }
 
 function renderProfile(profile){
-    const container = document.getElementById("profile-container");
+    const displayApp = document.getElementById("display-app");
+    displayApp.innerHTML = "";
 
     const banner = document.createElement("div");
     banner.className = "h-48 w-full bg-cover bg-center";
-    banner.style.backgroundImage = `url(${profile.banner?.url || 'https://i.imghippo.com/files/ZyN1996XVE.png'})`;
-    container.appendChild(banner);
+    banner.style.backgroundImage = `url(${profile.banner?.url || 'https://i.imghippo.com/files/ZyN1996XVE.png'
+    })`;
+    displayApp.appendChild(banner);
 
     const profileInfo = document.createElement("div");
-    profileInfo.className = "flex items center gap-4 mt-4";
+    profileInfo.className = "flex items-center gap-4 mt-4";
 
     const userAvatar = document.createElement("img");
     userAvatar.src = profile.avatar?.url || 'https://i.imghippo.com/files/ZyN1996XVE.png';
@@ -66,32 +69,42 @@ function renderProfile(profile){
 
     const nameElement = document.createElement("h2");
     nameElement.className = "text-xl font-bold";
+    nameElement.textContent = profile.name;
 
     const followerCount = document.createElement("p");
     followerCount.textContent =`Followers: ${profile._count.followers}, Following: ${profile._count.following}`;
 
     textContainer.appendChild(nameElement);
     textContainer.appendChild(followerCount);
+
     profileInfo.appendChild(userAvatar);
     profileInfo.appendChild(textContainer);
-    container.appendChild(profileInfo);
+
+    displayApp.appendChild(profileInfo);
+}
 
     function renderUserPosts(posts){
-        const container = document.getElementById("profile-posts");
-        container.innerHTML="";
+        const displayApp = document.getElementById("display-app");
 
-        const Title = document.createElement("h3");
-        Title.textContent = "Your Posts";
-        Title.className = "text-xl font-bold mb-2 mt-2";
-        container.appendChild(title);
+        const postsContainer = document.createElement("div");
+        postsContainer.className = "mt-4"
+
+        const title = document.createElement("h3");
+        title.textContent = "Your Posts";
+        title.className = "text-xl font-bold mb-2 mt-2";
+        postsContainer.appendChild(title);
         
         if(!posts.length){
             const noPost = document.createElement("p");
             noPost.textContent = "No posts found!";
-            container.appendChild(noPost);
-            return;
-        }
-        posts.forEach(post => {
+            postsContainer.appendChild(noPost);
+        } else {
+            posts.forEach(post => {
+            
+            const postLink = document.createElement("a")
+            postLink.href = `/HTML/post-specific-page.html?id=${post.id}`;
+            postLink.className = "block cursor-pointer";
+
             const postArticle = document.createElement("article");
             postArticle.className = "bg-white shadow rounded p-4 mb-4";
 
@@ -102,9 +115,15 @@ function renderProfile(profile){
             const postBodyText = document.createElement("p");
             postBodyText.textContent = post.body;
 
-            postArticle.appendChild
+            postArticle.appendChild(postTitle);
+            postArticle.appendChild(postBodyText);
+            postLink.appendChild(postArticle);
+            
+            postsContainer.appendChild(postLink);
         });
     }
-
+    displayApp.appendChild(postsContainer);
 
 }
+
+fetchProfile();
