@@ -198,6 +198,10 @@ function renderPosts(postsToRender = userPosts) {
     const userInfoElement = document.createElement("div");
     userInfoElement.className = "flex items-center gap-2 mb-2";
 
+    const profileLink = document.createElement("a");
+    profileLink.href = `/HTML/user-page.html?name=${post.author?.name}`;
+    profileLink.className = "flex items-center gap-2 hover:underline";
+
     const userProfileImage = document.createElement("img");
     userProfileImage.src =
       post.author?.avatar?.url || "https://i.imghippo.com/files/ZyN1996XVE.png";
@@ -208,8 +212,10 @@ function renderPosts(postsToRender = userPosts) {
     userName.textContent = post.author?.name;
     userName.className = "font-bold text-[1.2rem]";
 
-    userInfoElement.appendChild(userProfileImage);
-    userInfoElement.appendChild(userName);
+    profileLink.appendChild(userProfileImage);
+    profileLink.appendChild(userName);
+
+    userInfoElement.appendChild(profileLink);
 
     const postTitle = document.createElement("h3");
     postTitle.textContent = post.title || "Quick Post";
