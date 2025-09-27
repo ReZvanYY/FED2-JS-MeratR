@@ -163,12 +163,12 @@ async function deletePost(postId) {
   try {
     const apiKey = await getApiKey();
     const response = await fetch(`https://v2.api.noroff.dev/social/posts/${postId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "X-Noroff-API-Key": apiKey,
-        },
-      });
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-Noroff-API-Key": apiKey,
+      },
+    });
 
     if (!response.ok) throw new Error("Failed to delete the post!");
     fetchPosts();
@@ -224,6 +224,71 @@ function renderPosts(postsToRender = userPosts) {
     link.href = `/HTML/post-specific-page.html?id=${post.id}`;
     link.textContent = "See Post";
     link.className = "text-blue-600 hover:underline";
+
+    let likes = post._count.reactions || 0;
+
+    const likeButton = document.createElement("button");
+    likeButton.textContent = `❤️${likes}`;
+    likeButton.className = "mt-2 mb-2 px-2 py-1 rouded-md";
+    likeButton.addEventListener("click", async () => {
+      try {
+        const apiKey = await getApiKey();
+        const response = await fetch(`https://v2.api.noroff.dev/social/posts/${post.id}/react/❤️`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "X-Noroff-API-Key": apiKey,
+          },
+        });
+        if (!response.ok) throw new Error("Failed to react to post");
+
+        const result = await response.json();
+        likes = result.data.reactions.find(r => r.symbol === "❤️")?.count || 0;
+      } catch (error) {
+        alert("Error reacting to post", + error.message);
+        console.error(error);
+      }
+    });
+    articleElementForPost.appendChild(likeButton);
+
+    const commentContainer = document.createElement("div");
+    commentContainer.className = "mt-2";
+
+    const commentInput = document.createElement("input");
+    commentInput.type = "text";
+    commentInput.placeholder = "Add a comment";
+    commentInput.className = "px-2 py-1 rounded";
+
+    const submitCommentButton = document.createElement("button");
+    submitCommentButton.textContent = "COMMENT";
+    submitCommentButton.className = "px-2 py-1 rounded";
+
+    submitCommentButton.addEventListener("click", async () => {
+     let commentText = commentInput.value.trim();
+      if (!commentText) return;
+      try {
+        const apiKey = await getApiKey();
+        const response = await fetch(`https://v2.api.noroff.dev/social/posts/${post.id}/comment`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "X-Noroff-API-Key": apiKey,
+          },
+          body: JSON.stringify({ body: commentText }),
+        });
+        if (!response.ok) throw new Error("Unable to post comment")
+        commentInput = "";
+        fetchPosts();
+      } catch (error) {
+        alert("Error commenting: ", +error.message);
+        console.error(error)
+      }
+    });
+
+    commentContainer.appendChild(commentInput);
+    commentContainer.appendChild(submitCommentButton);
+    articleElementForPost.appendChild(commentContainer);
 
     if (post.author?.name === currentUser.name) {
       const interactiveButtonContainer = document.createElement("div");
