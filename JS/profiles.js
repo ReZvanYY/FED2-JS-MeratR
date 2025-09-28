@@ -5,6 +5,12 @@ if(!token){
 
 const currentUser = JSON.parse(localStorage.getItem("user"));
 const apiKeyStorage = "apiKey";
+const params = new URLSearchParams(location.search);
+const requestedName = params.get("name");
+
+if(!requestedName && !currentUser?.name) {
+    throw new Error ("No profile name found");
+}
 
 async function getApiKey(){
     let apiKey = localStorage.getItem(apiKeyStorage);
@@ -29,7 +35,13 @@ async function getApiKey(){
 async function fetchProfile(){
     try{
         const apiKey = await getApiKey();
-        const response = await fetch(`https://v2.api.noroff.dev/social/profiles/${currentUser.name}?_followers=true&_following=true&_posts=true`, {
+
+        let profileToFetch = requestedName || currentUser.name;
+        if(requestedName && requestedName === currentUser.name) {
+            profileToFetch = currentUser.name
+        }
+
+        const response = await fetch(`https://v2.api.noroff.dev/social/profiles/${profileToFetch}?_followers=true&_following=true&_posts=true`, {
             method: "GET",
             headers: {
                  Authorization: `Bearer ${token}`, 
@@ -39,7 +51,11 @@ async function fetchProfile(){
         if(!response.ok) throw new Error("Failed to fetch profile");
         const result = await response.json();
 
-        renderProfile(result.data);
+        if(result.data.name === currentUser.name){
+            renderProfile(result.data, true);
+        } else {
+            renderProfile(result.data, false);
+        }
         renderUserPosts(result.data.posts || []);
     } catch(error){
         alert("Unable to render profile: " + error.message);
@@ -47,7 +63,7 @@ async function fetchProfile(){
     }
 }
 
-function renderProfile(profile){
+function renderProfile(profile, isCurrentUser){
     const displayApp = document.getElementById("display-app");
     displayApp.innerHTML = "";
 
@@ -81,6 +97,41 @@ function renderProfile(profile){
     profileInfo.appendChild(textContainer);
 
     displayApp.appendChild(profileInfo);
+
+    if(!isCurrentUser) {
+        const followButton = document.createElement("button");
+
+        let isFollowing = profile.followers?.some(
+            (f) => f.name === currentUser.name);
+
+    followButton.textContent = isFollowing ? "UNFOLLOW" : "FOLLOW";
+    followButton.className = "px-4 mt-2 bg-green-300 hover:bg-green-500";
+
+    followButton.addEventListener("click", async () => {
+        try {
+            const apiKey = await getApiKey();
+            const apiUrl = `https://v2.api.noroff.dev/social/profiles/${profile.id}/follow`
+            
+            const respons = await fetch(apiUrl, {
+            method: isFollowing ? "DELETE" : "POST",
+            headers: {
+            Authorization: `Bearer ${token}`,
+            "X-Noroff-API-Key": apiKey, 
+            },
+        });
+
+        if(!respons.ok) throw new Error("Failed to update follow status");
+        
+        isFollowing = !isFollowing;
+        followButton.textContent = isFollowing ? "UNFOLLOW" : "FOLLOW";
+        
+        fetchProfile();
+    } catch (error){
+        console.error("Error in the follow/unfollow interaction", error.message);
+        alert("Error " + error.message);
+    }
+});
+    displayApp.appendChild(followButton);
 }
 
     function renderUserPosts(posts){
@@ -125,5 +176,5 @@ function renderProfile(profile){
     displayApp.appendChild(postsContainer);
 
 }
-
+}
 fetchProfile();
