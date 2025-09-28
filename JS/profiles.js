@@ -51,6 +51,8 @@ async function fetchProfile(){
         if(!response.ok) throw new Error("Failed to fetch profile");
         const result = await response.json();
 
+        document.title = "Rizz Zone: " + result.data.name;
+
         if(result.data.name === currentUser.name){
             renderProfile(result.data, true);
         } else {
@@ -74,12 +76,12 @@ function renderProfile(profile, isCurrentUser){
     displayApp.appendChild(banner);
 
     const profileInfo = document.createElement("div");
-    profileInfo.className = "flex items-center gap-4 mt-4";
+    profileInfo.className = "flex flex-col items-center gap-4 mt-4";
 
     const userAvatar = document.createElement("img");
     userAvatar.src = profile.avatar?.url || 'https://i.imghippo.com/files/ZyN1996XVE.png';
     userAvatar.alt = profile.avatar?.alt || 'Users profile picture.';
-    userAvatar.className = "w-24 h-24 rounded-full";
+    userAvatar.className = "w-24 rounded-full";
 
     const textContainer = document.createElement("div");
 
@@ -98,6 +100,53 @@ function renderProfile(profile, isCurrentUser){
 
     displayApp.appendChild(profileInfo);
 
+    if(isCurrentUser){
+        const avatarInput = document.createElement("input");
+        avatarInput.type = "url";
+        avatarInput.placeholder = "Use a public URL"
+        avatarInput.className = "mt-4 bg-gray-200 border-2 text-center";
+
+        const updateButton = document.createElement("button");
+        updateButton.textContent = "Update Profile Picture";
+        updateButton.className = "px-4 mt-2 cursor-pointer rounded"
+
+        updateButton.addEventListener("click", async () =>{
+            const avatarUrl = avatarInput.value.trim();
+            if(!avatarUrl) {
+                alert("Please enter a valid public image url");
+                return;
+            }
+            try{
+                const apiKey = await getApiKey();
+                const response = await fetch(`https://v2.api.noroff.dev/social/profiles/${profile.name}`, {
+                
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                    "X-Noroff-API-Key": apiKey,
+                },
+                body : JSON.stringify({    
+                        avatar: {
+                        url: avatarUrl,
+                        alt: "Profile picture" 
+                    }
+                })
+            });
+                if(!response.ok) throw new Error("Failed to update profile picture");
+
+                const result = await response.json();
+                userAvatar.src = result.data.avatar?.url;
+                alert("Profile Picture is now updated!");
+            } catch (error) {
+                console.error("Error updating profile picture ", error.message);
+                alert(error.message)
+            }
+        });
+        displayApp.appendChild(avatarInput);
+        displayApp.appendChild(updateButton);
+    }
+
     if(!isCurrentUser) {
         const followButton = document.createElement("button");
 
@@ -110,10 +159,10 @@ function renderProfile(profile, isCurrentUser){
     followButton.addEventListener("click", async () => {
         try {
             const apiKey = await getApiKey();
-            const apiUrl = `https://v2.api.noroff.dev/social/profiles/${profile.id}/follow`
+            const apiUrl = `https://v2.api.noroff.dev/social/profiles/${profile.name}/${isFollowing ? "unfollow" : "follow"}`;
             
             const respons = await fetch(apiUrl, {
-            method: isFollowing ? "DELETE" : "POST",
+            method: "PUT",
             headers: {
             Authorization: `Bearer ${token}`,
             "X-Noroff-API-Key": apiKey, 
@@ -133,26 +182,26 @@ function renderProfile(profile, isCurrentUser){
 });
     displayApp.appendChild(followButton);
 }
+}
 
-    function renderUserPosts(posts){
-        const displayApp = document.getElementById("display-app");
+function renderUserPosts(posts) {
+    const displayApp = document.getElementById("display-app");
 
-        const postsContainer = document.createElement("div");
-        postsContainer.className = "mt-4"
+    const postsContainer = document.createElement("div");
+    postsContainer.className = "mt-4"
 
-        const title = document.createElement("h3");
-        title.textContent = "Your Posts";
-        title.className = "text-xl font-bold mb-2 mt-2";
-        postsContainer.appendChild(title);
-        
-        if(!posts.length){
-            const noPost = document.createElement("p");
-            noPost.textContent = "No posts found!";
-            postsContainer.appendChild(noPost);
-        } else {
-            posts.forEach(post => {
-            
-            const postLink = document.createElement("a")
+    const title = document.createElement("h3");
+    title.textContent = "Your Posts";
+    title.className = "text-xl font-bold mb-2 mt-2";
+    postsContainer.appendChild(title);
+
+    if(!posts.length){
+        const noPost = document.createElement("p");
+        noPost.textContent = "No posts found!";
+        postsContainer.appendChild(noPost);
+    } else {
+        posts.forEach(post => {
+            const postLink = document.createElement("a");
             postLink.href = `/HTML/post-specific-page.html?id=${post.id}`;
             postLink.className = "block cursor-pointer";
 
@@ -169,12 +218,12 @@ function renderProfile(profile, isCurrentUser){
             postArticle.appendChild(postTitle);
             postArticle.appendChild(postBodyText);
             postLink.appendChild(postArticle);
-            
+
             postsContainer.appendChild(postLink);
         });
     }
-    displayApp.appendChild(postsContainer);
 
+    displayApp.appendChild(postsContainer);
 }
-}
+
 fetchProfile();
