@@ -110,4 +110,31 @@ function renderPost(post){
             alert("Error liking the post ", error.message);
         }
     });
+
+    const commentContainer = document.createElement("div");
+    commentContainer.className = "mt-4";
+
+    if(post.comments.length === 0){
+        const noComment = document.createElement("p");
+        noComment.textContent = "No comments yet";
+        commentContainer.appendChild(noComment);
+    } else {
+        post.comments.forEach(comment => {
+        const commentParagraph = document.createElement("p");
+        commentParagraph.textContent = 
+        `${comment.author?.name || comment.owner}: ${comment.body}`;
+        commentParagraph.className = "border-b py-1";
+        });
+    }
+    const inputContainer = document.createElement("div");
+    inputContainer.className = "flex gap-2 mt-2";
+
+    const commentInputField = document.createElement("input");
+    commentInputField.type = "text";
+    commentInputField.placeholder = "Add a comment";
+    commentInputField.className = "px-2 py-1 border rounded bg-gray-200";
+ 
+    const submitCommentButton = document.createElement("button");
+    submitCommentButton.textContent = "COMMENT";
+    submitCommentButton.className = "bg-[#B56F76] border-2 border-black text-black font-montserrat font-bold rounded-md p-2 mt-4 hover:bg-[#b56472] cursor-pointer";
 }
