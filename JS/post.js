@@ -74,7 +74,6 @@ function renderPost(post) {
 
     likeButton.addEventListener("click", async () => {
         try {
-            const apiKey = await getApiKey();
             const respons = await fetch(
                 `https://v2.api.noroff.dev/social/posts/${post.id}/react/❤️`,
                 {
@@ -131,7 +130,6 @@ function renderPost(post) {
         if (!commentText) return;
 
         try {
-            const apiKey = await getApiKey();
             const respons = await fetch(
                 `https://v2.api.noroff.dev/social/posts/${post.id}/comment`,
                 {
